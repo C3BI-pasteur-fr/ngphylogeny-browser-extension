@@ -44,12 +44,17 @@ The user is a French-speaking bioinformatician. Reply in the language they write
 
 ## Tests
 
+`npm install` once (playwright and web-ext are `package.json` devDependencies), then:
+
 ```bash
-node test/parser.test.js                                   # 15 parser tests, no dependencies
-NODE_PATH=$(npm root -g) node test/fill.harness.js         # Playwright: One Click paste script on 4 mock forms
-NODE_PATH=$(npm root -g) node test/blast.fill.harness.js   # Playwright: Blast paste script on 4 mock forms
-NODE_PATH=$(npm root -g) node test/popup.harness.js        # Playwright: popup with mocked browser API
+node test/parser.test.js         # 15 parser tests, no dependencies
+node test/fill.harness.js        # Playwright: One Click paste script on 4 mock forms
+node test/blast.fill.harness.js  # Playwright: Blast paste script on 4 mock forms
+node test/popup.harness.js       # Playwright: popup with mocked browser API
 ```
+
+`npm test` only runs `parser.test.js` (fast, no browser); the three Playwright harnesses are invoked
+directly since they're slower and need Chromium.
 
 ## Status
 
