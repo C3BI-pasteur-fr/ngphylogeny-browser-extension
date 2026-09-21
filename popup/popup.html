@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Sequences to NGPhylogeny</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <h1>Sequences on this page</h1>
+    <div id="scope" class="segmented" role="group" aria-label="Extraction scope" hidden>
+      <button type="button" data-mode="selection" aria-pressed="false">Selection <span class="count"></span></button>
+      <button type="button" data-mode="page" aria-pressed="true">Whole page <span class="count"></span></button>
+    </div>
+  </header>
+
+  <main>
+    <p id="empty" class="empty" hidden></p>
+
+    <section id="results" hidden>
+      <div id="target" class="segmented" role="group" aria-label="Send to">
+        <button type="button" data-target="oneclick" aria-pressed="true">One Click</button>
+        <button type="button" data-target="blast" aria-pressed="false">Blast <small>(1 sequence)</small></button>
+      </div>
+
+      <div class="summary">
+        <label class="check"><input type="checkbox" id="select-all" checked> <span id="summary-text"></span></label>
+      </div>
+
+      <ul id="list" class="list" aria-label="Detected sequences"></ul>
+
+      <div class="options">
+        <label class="check">
+          <input type="checkbox" id="opt-short" checked>
+          <span>Short identifiers <small>(recommended: avoids characters that break trees)</small></span>
+        </label>
+        <label class="check">
+          <input type="checkbox" id="opt-gaps" checked>
+          <span>Remove gaps "-" and trailing "*"</span>
+        </label>
+      </div>
+
+      <div id="warnings" class="warnings" role="alert"></div>
+
+      <details>
+        <summary>FASTA preview</summary>
+        <textarea id="preview" readonly spellcheck="false" rows="7" aria-label="Generated FASTA preview"></textarea>
+      </details>
+    </section>
+  </main>
+
+  <footer>
+    <p id="status" class="status" role="status"></p>
+    <div class="actions">
+      <button type="button" id="copy" class="secondary" disabled>Copy FASTA</button>
+      <button type="button" id="send" class="primary" disabled>Send to NGPhylogeny</button>
+    </div>
+    <p class="note">The destination page opens in a new tab and the FASTA is also copied to the clipboard. The form is not submitted.</p>
+  </footer>
+
+  <script src="../lib/parser.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

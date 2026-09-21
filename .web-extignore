@@ -1,0 +1,8 @@
+test/
+package.json
+package-lock.json
+CLAUDE.md
+README.md
+seq2ngphylo-en.zip
+web-ext-artifacts/
+updates.json

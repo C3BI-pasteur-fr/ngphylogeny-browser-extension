@@ -1,0 +1,122 @@
+:root {
+  --bg: #f7f9fa;
+  --panel: #ffffff;
+  --ink: #14232b;
+  --muted: #55666e;
+  --line: #d3dce0;
+  --accent: #0a6c74;
+  --accent-ink: #ffffff;
+  --warn-bg: #fff3d1;
+  --warn-ink: #6b4400;
+  --focus: #1a73e8;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12181c;
+    --panel: #1a2227;
+    --ink: #e4ecef;
+    --muted: #9db0b8;
+    --line: #2c3a41;
+    --accent: #3fb7c2;
+    --accent-ink: #0b1a1d;
+    --warn-bg: #3a2c0a;
+    --warn-ink: #f3d189;
+    --focus: #8ab4f8;
+  }
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html, body { margin: 0; }
+body {
+  width: 440px;
+  background: var(--bg);
+  color: var(--ink);
+  font: 13px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+header, main, footer { padding: 12px 14px; }
+header { padding-bottom: 4px; }
+footer { border-top: 1px solid var(--line); background: var(--panel); }
+
+h1 { margin: 0 0 8px; font-size: 15px; font-weight: 650; letter-spacing: 0; }
+
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* Selection / page scope */
+.segmented { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.segmented button {
+  border: 0; background: var(--panel); color: var(--muted);
+  padding: 4px 12px; font: inherit; cursor: pointer;
+}
+.segmented button + button { border-left: 1px solid var(--line); }
+.segmented button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.segmented .count { opacity: .85; }
+.segmented small { opacity: .85; }
+
+#target { margin-bottom: 8px; }
+
+.empty { margin: 8px 0; color: var(--muted); }
+
+/* List */
+.summary { margin-bottom: 6px; color: var(--muted); }
+.check { display: flex; align-items: baseline; gap: 6px; cursor: pointer; }
+.check input { margin: 0; transform: translateY(2px); }
+.check small { color: var(--muted); }
+
+.list {
+  list-style: none; margin: 0; padding: 0;
+  max-height: 230px; overflow-y: auto;
+  border: 1px solid var(--line); border-radius: 6px; background: var(--panel);
+}
+.row {
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px;
+  padding: 5px 8px;
+}
+.row + .row { border-top: 1px solid var(--line); }
+.row input[type="text"] {
+  width: 100%; min-width: 0; padding: 3px 6px;
+  border: 1px solid transparent; border-radius: 4px;
+  background: transparent; color: inherit;
+  font: 12px ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+.row input[type="text"]:hover { border-color: var(--line); }
+.row input[type="text"]:focus { border-color: var(--accent); background: var(--bg); }
+.row.off input[type="text"] { opacity: .5; }
+.meta { color: var(--muted); font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+.options { display: grid; gap: 4px; margin: 10px 0 8px; }
+
+.warnings:empty { display: none; }
+.warnings {
+  margin: 8px 0; padding: 7px 10px; border-radius: 6px;
+  background: var(--warn-bg); color: var(--warn-ink);
+}
+.warnings p { margin: 0; }
+.warnings p + p { margin-top: 4px; }
+
+details { margin-top: 6px; }
+summary { cursor: pointer; color: var(--muted); }
+textarea {
+  width: 100%; margin-top: 6px; padding: 6px 8px; resize: vertical;
+  border: 1px solid var(--line); border-radius: 6px;
+  background: var(--panel); color: var(--ink);
+  font: 11.5px/1.35 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* Footer */
+.actions { display: flex; gap: 8px; justify-content: flex-end; }
+button.primary, button.secondary {
+  padding: 6px 14px; border-radius: 6px; font: inherit; font-weight: 600; cursor: pointer;
+}
+button.primary { border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); }
+button.secondary { border: 1px solid var(--line); background: var(--panel); color: var(--ink); }
+button:disabled { opacity: .45; cursor: not-allowed; }
+.status { margin: 0 0 6px; color: var(--muted); }
+.status:empty { display: none; }
+.note { margin: 8px 0 0; color: var(--muted); font-size: 12px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .segmented button, button.primary, button.secondary { transition: background-color .12s; }
+}

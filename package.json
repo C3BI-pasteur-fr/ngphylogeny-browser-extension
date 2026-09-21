@@ -1,0 +1,16 @@
+{
+  "name": "seq2ngphylo",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Extracts sequences from a web page and pastes them into NGPhylogeny.fr (One Click / Blast).",
+  "scripts": {
+    "test": "node test/parser.test.js",
+    "lint": "web-ext lint",
+    "build": "web-ext build --overwrite-dest",
+    "sign": "web-ext sign --channel=unlisted --api-key=$AMO_JWT_ISSUER --api-secret=$AMO_JWT_SECRET"
+  },
+  "devDependencies": {
+    "playwright": "^1.47.0",
+    "web-ext": "^8.3.0"
+  }
+}

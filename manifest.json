@@ -1,0 +1,35 @@
+{
+  "manifest_version": 2,
+  "name": "Sequences to NGPhylogeny",
+  "version": "0.2.0",
+  "description": "Extracts sequences (nucleotide or protein) from a web page, formats them as FASTA and pastes them into the One Click or Blast forms of NGPhylogeny.fr, without submitting them.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "seq2ngphylo@pasteur.fr",
+      "strict_min_version": "91.0",
+      "update_url": "https://github.com/C3BI-pasteur-fr/ngphylogeny_browser_extension/releases/latest/download/updates.json"
+    }
+  },
+  "icons": {
+    "48": "icons/icon.svg",
+    "96": "icons/icon.svg"
+  },
+  "browser_action": {
+    "default_title": "Sequences to NGPhylogeny",
+    "default_popup": "popup/popup.html",
+    "default_icon": "icons/icon.svg"
+  },
+  "permissions": ["activeTab", "storage", "clipboardWrite"],
+  "content_scripts": [
+    {
+      "matches": ["https://ngphylogeny.fr/workflows/oneclick*"],
+      "js": ["content/ngphylogeny.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://ngphylogeny.fr/blast*"],
+      "js": ["content/blast.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
