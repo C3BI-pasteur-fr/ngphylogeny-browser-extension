@@ -11,7 +11,7 @@ into the query field of the [Blast](https://ngphylogeny.fr/blast/) page.
 ### Permanent (recommended)
 
 Download the latest signed `.xpi` from the
-[Releases page](https://github.com/C3BI-pasteur-fr/ngphylogeny_browser_extension/releases/latest) and
+[Releases page](https://github.com/C3BI-pasteur-fr/ngphylogeny-browser-extension/releases/latest) and
 open it in Firefox (drag it into a Firefox window, or `File > Open File…`). Firefox will ask to confirm
 the install; the extension is signed by Mozilla, so this works in regular Firefox with no special flags.
 Once installed, Firefox checks Mozilla's own update service for new signed versions automatically —
