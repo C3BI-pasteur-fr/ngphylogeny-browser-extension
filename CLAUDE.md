@@ -11,12 +11,13 @@ The user is a French-speaking bioinformatician. Reply in the language they write
 
 - `manifest.json` — MV2. Permissions: `activeTab`, `storage`, `clipboardWrite`.
   Content scripts on `https://ngphylogeny.fr/workflows/oneclick*` and `https://ngphylogeny.fr/blast*`.
-  `gecko.id` is `seq2ngphylo@pasteur.fr`; `gecko.update_url` points at this repo's latest GitHub
-  Release `updates.json` (self-distributed: signed by Mozilla, not listed on AMO).
+  `gecko.id` is `seq2ngphylo@pasteur.fr`; `gecko.data_collection_permissions.required` is `["none"]`.
+  No `gecko.update_url`: AMO rejects it at lint/sign time ("not allowed for Mozilla-hosted add-ons") —
+  signing via the API (even unlisted) registers the add-on with Mozilla's own update service, which
+  Firefox then checks automatically.
 - `.github/workflows/release.yml` — on a `v*.*.*` tag push: tests, lints, builds, signs via the AMO
   API (`web-ext sign --channel=unlisted`, needs repo secrets `AMO_JWT_ISSUER`/`AMO_JWT_SECRET`), then
-  publishes a GitHub Release with the signed `.xpi` and a generated `updates.json`. See README
-  "Releasing a new version".
+  publishes a GitHub Release with the signed `.xpi` attached. See README "Releasing a new version".
 - `lib/parser.js` — pure functions, no DOM. `parse`, `parseAll`, `detectType`, `simplifyId`,
   `uniquify`, `cleanSeq`, `buildFasta`. Loaded by the popup (`<script>`), injected into the page
   (`tabs.executeScript`), and `require()`-able from Node.

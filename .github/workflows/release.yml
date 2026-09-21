@@ -48,18 +48,9 @@ jobs:
           WEB_EXT_API_SECRET: ${{ secrets.AMO_JWT_SECRET }}
         run: npx web-ext sign --channel=unlisted --artifacts-dir web-ext-artifacts
 
-      - name: Prepare release assets
+      - name: Locate the signed .xpi
         id: assets
-        run: |
-          XPI="$(ls web-ext-artifacts/*.xpi)"
-          echo "xpi=$XPI" >> "$GITHUB_OUTPUT"
-          ADDON_ID="$(jq -r .browser_specific_settings.gecko.id manifest.json)"
-          VERSION="$(jq -r .version manifest.json)"
-          DOWNLOAD_URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/$(basename "$XPI")"
-          jq -n \
-            --arg id "$ADDON_ID" --arg version "$VERSION" --arg url "$DOWNLOAD_URL" \
-            '{addons: {($id): {updates: [{version: $version, update_link: $url}]}}}' \
-            > web-ext-artifacts/updates.json
+        run: echo "xpi=$(ls web-ext-artifacts/*.xpi)" >> "$GITHUB_OUTPUT"
 
       - name: Create the GitHub release
         env:
@@ -67,6 +58,5 @@ jobs:
         run: |
           gh release create "$GITHUB_REF_NAME" \
             "${{ steps.assets.outputs.xpi }}" \
-            web-ext-artifacts/updates.json \
             --title "$GITHUB_REF_NAME" \
             --generate-notes

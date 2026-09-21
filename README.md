@@ -13,8 +13,9 @@ into the query field of the [Blast](https://ngphylogeny.fr/blast/) page.
 Download the latest signed `.xpi` from the
 [Releases page](https://github.com/C3BI-pasteur-fr/ngphylogeny_browser_extension/releases/latest) and
 open it in Firefox (drag it into a Firefox window, or `File > Open File…`). Firefox will ask to confirm
-the install; the extension is signed by Mozilla, so this works in regular Firefox with no special flags,
-and it will auto-update itself when a new release is published (see below).
+the install; the extension is signed by Mozilla, so this works in regular Firefox with no special flags.
+Once installed, Firefox checks Mozilla's own update service for new signed versions automatically —
+no separate update URL needed, even though the add-on isn't listed on addons.mozilla.org (see below).
 
 ### Temporary, for testing a local checkout
 
@@ -108,8 +109,11 @@ Blast only ever sends one sequence, so these warnings don't apply there.
 ## Releasing a new version (maintainers)
 
 The extension is self-distributed: signed by Mozilla (so Firefox accepts the install) but not listed on
-addons.mozilla.org, and updated via its own `updates.json` rather than AMO's update mechanism.
-`.github/workflows/release.yml` automates this on every version tag push.
+addons.mozilla.org. Signing an add-on through the AMO API — even on the unlisted channel — registers it
+under your account, so Firefox's built-in update check keeps picking up new signed versions on its own;
+a manifest `update_url` is not just unnecessary, `web-ext lint` rejects it outright
+(`MANIFEST_UPDATE_URL`, "not allowed for Mozilla-hosted add-ons"). `.github/workflows/release.yml`
+automates building and signing on every version tag push.
 
 **One-time setup:**
 
@@ -126,10 +130,10 @@ addons.mozilla.org, and updated via its own `updates.json` rather than AMO's upd
    `manifest.json`, or the workflow fails fast before signing anything.
 3. The workflow runs the parser tests, lints and builds the extension, signs it via the AMO API
    (`--channel=unlisted`, i.e. self-distribution, no public review queue), and publishes a GitHub Release
-   with two assets: the signed `.xpi` and an `updates.json` pointing to it.
-4. Because `manifest.json`'s `update_url` always points at
-   `.../releases/latest/download/updates.json`, every previously installed copy of the extension picks
-   up the new version automatically (Firefox checks roughly once a day).
+   with the signed `.xpi` attached.
+4. Existing installs pick up the new version on their own via Mozilla's update service (Firefox checks
+   roughly once a day) — nothing to host or configure beyond signing. The GitHub Release is there so new
+   users have somewhere to download the `.xpi` from.
 
 To sign a build locally instead (e.g. to test signing before tagging), run
 `AMO_JWT_ISSUER=... AMO_JWT_SECRET=... npm run sign`.
@@ -139,5 +143,7 @@ To sign a build locally instead (e.g. to test signing before tagging), run
 Permissions: `activeTab` (reads the page only when you click), `storage` (temporary hand-off of the
 FASTA, deleted as soon as it is consumed or after 5 min), `clipboardWrite`, and content scripts
 limited to `https://ngphylogeny.fr/workflows/oneclick*` and `https://ngphylogeny.fr/blast*`.
-No data is sent anywhere else, except that Firefox itself periodically checks
-`manifest.json`'s `update_url` (a static file on GitHub) to see if a newer signed build is available.
+No data is sent anywhere else, except that Firefox itself periodically checks Mozilla's update
+service to see if a newer signed build of this add-on is available (standard behaviour for any
+Mozilla-signed extension, listed or not; declared via `data_collection_permissions: {required: ["none"]}`
+in `manifest.json`).
