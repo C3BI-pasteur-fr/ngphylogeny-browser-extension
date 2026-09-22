@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Sequences to NGPhylogeny",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Extracts sequences (nucleotide or protein) from a web page, formats them as FASTA and pastes them into the One Click or Blast forms of NGPhylogeny.fr, without submitting them.",
   "browser_specific_settings": {
     "gecko": {

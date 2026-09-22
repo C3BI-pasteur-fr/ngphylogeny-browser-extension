@@ -1,6 +1,6 @@
 {
   "name": "seq2ngphylo",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Extracts sequences from a web page and pastes them into NGPhylogeny.fr (One Click / Blast).",
   "scripts": {
