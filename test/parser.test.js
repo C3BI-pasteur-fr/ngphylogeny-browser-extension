@@ -133,4 +133,94 @@ test('buildFasta: nothing to write', () => {
   assert.strictEqual(P.buildFasta([]), '');
 });
 
+test('GenBank CDS: /translation named after /protein_id, first line included', () => {
+  const gb = [
+    'LOCUS       AJ697866                 667 bp    RNA     linear   VRL 26-JUL-2016',
+    'DEFINITION  Influenza A virus partial H3 gene for hemagglutinin.',
+    'VERSION     AJ697866.1',
+    'FEATURES             Location/Qualifiers',
+    '     source          1..667',
+    '                     /organism="Influenza A virus',
+    '                     (A/Nightingale/France/95125/95 (H3N2))"',
+    '                     /mol_type="genomic RNA"',
+    '     CDS             <1..>667',
+    '                     /gene="H3"',
+    '                     /product="hemagglutinin"',
+    '                     /protein_id="CAG27342.1"',
+    '                     /translation="QSSSTGKIRNNPHRILDGRDCTLIDALLGDPHCDVFQDETWDLF',
+    '                     VERSNAFSNCYPYDVPDYASLRSLVASSGTLEFITEGFTWTGVTQNGGSNACKRGPAS',
+    '                     TGKT"',
+    'ORIGIN',
+    '        1 atggctagct agctaggatc gatcgatcga ttagctagct aggctagcta gctagcatcg',
+    '//',
+  ].join('\n');
+  const r = P.parse(gb);
+  assert.strictEqual(r.length, 2);
+  assert.strictEqual(r[0].header, 'CAG27342.1 hemagglutinin');
+  assert.strictEqual(r[0].type, 'protein');
+  assert.ok(r[0].seq.startsWith('QSSSTGKIRNNPHRILDGRDCTLIDALLGDPHCDVFQDETWDLFVERSNAF'));
+  assert.ok(r[0].seq.endsWith('TGKT'));
+  assert.strictEqual(r[0].length, 106);
+  assert.strictEqual(P.simplifyId(r[0].header), 'CAG27342.1');
+  assert.strictEqual(r[1].type, 'dna');           // the ORIGIN block is still read
+  assert.strictEqual(r[1].length, 60);
+});
+
+test('GenBank: several CDS, qualifiers do not leak between features', () => {
+  const gb = [
+    'LOCUS       TEST',
+    'FEATURES             Location/Qualifiers',
+    '     CDS             1..39',
+    '                     /protein_id="AAA00001.1"',
+    '                     /translation="MKVLAAGIVGLLLAQPTEA"',
+    '     CDS             complement(40..99)',
+    '                     /locus_tag="b0002"',
+    '                     /translation="MSDEFGHIKLMNPQRSTVW',
+    '                     YACDEFGHIK"',
+    '//',
+  ].join('\n');
+  const r = P.parse(gb);
+  assert.strictEqual(r.length, 2);
+  assert.strictEqual(r[0].header, 'AAA00001.1');
+  assert.strictEqual(r[0].seq, 'MKVLAAGIVGLLLAQPTEA');
+  assert.strictEqual(r[1].header, 'b0002');       // no /protein_id: falls back to /locus_tag
+  assert.strictEqual(r[1].seq, 'MSDEFGHIKLMNPQRSTVWYACDEFGHIK');
+});
+
+test('EMBL feature table (FT lines): /translation extracted', () => {
+  const embl = [
+    'ID   AJ697866; SV 1; linear; genomic RNA; STD; VRL; 667 BP.',
+    'FH   Key             Location/Qualifiers',
+    'FT   CDS             <1..>667',
+    'FT                   /product="hemagglutinin"',
+    'FT                   /protein_id="CAG27342.1"',
+    'FT                   /translation="QSSSTGKIRNNPHRILDGRDCTLIDALLGDPHCDVFQDETWDLFV',
+    'FT                   ERSNAFSNCYPYDVPDYASLRSLVASSGTLEFITEGFTWTGVTQNGGSNACKRGPAST"',
+    '//',
+  ].join('\n');
+  const r = P.parse(embl);
+  assert.strictEqual(r.length, 1);
+  assert.strictEqual(r[0].header, 'CAG27342.1 hemagglutinin');
+  assert.strictEqual(r[0].type, 'protein');
+  assert.strictEqual(
+    r[0].seq,
+    'QSSSTGKIRNNPHRILDGRDCTLIDALLGDPHCDVFQDETWDLFV' +
+    'ERSNAFSNCYPYDVPDYASLRSLVASSGTLEFITEGFTWTGVTQNGGSNACKRGPAST'  // no "FT" prefix left
+  );
+});
+
+test('a CDS block without its FEATURES header is still read, prose ignored', () => {
+  const t = [
+    '     CDS             1..39',
+    '                     /gene="tiny"',
+    '                     /translation="MKVLAAGIVGLLLAQPTEALSDEFG',
+    '                     HIKLMNPQRSTVWY"',
+    'Related sequences and other links',
+  ].join('\n');
+  const r = P.parse(t);
+  assert.strictEqual(r.length, 1);
+  assert.strictEqual(r[0].header, 'tiny');
+  assert.strictEqual(r[0].seq, 'MKVLAAGIVGLLLAQPTEALSDEFGHIKLMNPQRSTVWY');
+});
+
 console.log(`\n${n} tests passed`);

@@ -47,7 +47,7 @@ The user is a French-speaking bioinformatician. Reply in the language they write
 `npm install` once (playwright and web-ext are `package.json` devDependencies), then:
 
 ```bash
-node test/parser.test.js         # 15 parser tests, no dependencies
+node test/parser.test.js         # 19 parser tests, no dependencies
 node test/fill.harness.js        # Playwright: One Click paste script on 4 mock forms
 node test/blast.fill.harness.js  # Playwright: Blast paste script on 4 mock forms
 node test/popup.harness.js       # Playwright: popup with mocked browser API
@@ -58,7 +58,9 @@ directly since they're slower and need Chromium.
 
 ## Status
 
-Verified: parser (FASTA, GenBank ORIGIN, EMBL/UniProt SQ, bare sequences, no false positives on prose);
+Verified: parser (FASTA, GenBank ORIGIN, EMBL/UniProt SQ, CDS `/translation=` blocks of a GenBank or
+EMBL feature table — named after `/protein_id`, checked against the real AJ697866 and NC_001416
+records fetched from NCBI/ENA —, bare sequences, no false positives on prose);
 paste script on mock forms, for both One Click and Blast (visible field, field behind a radio button,
 late-injected field, no field); popup logic and rendering (light/dark), including the One
 Click/Blast destination toggle and its single-sequence radio selection.

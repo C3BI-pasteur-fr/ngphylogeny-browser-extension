@@ -74,6 +74,8 @@ icon (Extensions), then the pin next to "Sequences to NGPhylogeny".
 ### Recognised formats
 
 FASTA (wrapped or single-line), GenBank (`ORIGIN … //`), EMBL / UniProt flat file (`SQ … //`),
+the protein translations of a feature table (each CDS `/translation=` block, GenBank or EMBL `FT`
+lines, named after `/protein_id` — failing that `/locus_tag`, `/gene` or `/product`),
 and "bare" sequences (a long line, or blocks of 10 with line numbers).
 
 ### Options
@@ -87,7 +89,7 @@ Blast only ever sends one sequence, so these warnings don't apply there.
 
 ## What has been tested, and what has not
 
-- `node test/parser.test.js`: 15 parser tests (formats, false positives on running text, names).
+- `node test/parser.test.js`: 19 parser tests (formats, false positives on running text, names).
 - `test/fill.harness.js`, `test/blast.fill.harness.js` and `test/popup.harness.js` (Playwright /
   Chromium): pasting into four mock forms per destination (visible field, field hidden behind a radio
   button, field injected late, no field), the absence of form submission, and the popup with a
