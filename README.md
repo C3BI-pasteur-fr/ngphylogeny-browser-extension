@@ -131,6 +131,14 @@ Blast only ever sends one sequence, so these warnings don't apply there.
 - Manifest V2, chosen for Firefox (no host permission to grant). A Chrome port will need MV3
   (`chrome.scripting.executeScript`; no service worker needed here).
 
+## Citation
+
+The popup footer asks users to cite the NGPhylogeny.fr paper:
+
+> Lemoine F, Correia D, Lefort V, Doppelt-Azeroual O, Mareuil F, Cohen-Boulakia S, Gascuel O.
+> *NGPhylogeny.fr: new generation phylogenetic services for non-specialists.*
+> Nucleic Acids Research. 2019;47(W1):W260–W265. [doi:10.1093/nar/gkz303](https://doi.org/10.1093/nar/gkz303)
+
 ## Releasing a new version (maintainers)
 
 The extension is self-distributed: signed by Mozilla (so Firefox accepts the install) but not listed on

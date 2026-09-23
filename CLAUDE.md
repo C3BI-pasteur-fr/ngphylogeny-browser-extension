@@ -52,7 +52,8 @@ The user is a French-speaking bioinformatician. Reply in the language they write
   `state.fetchedSeen`, append to `state.sets.fetched` (a third scope alongside Selection/Whole page),
   reveal the results section, switch to the Fetched tab. "Send" writes `{fasta, count, ts}` to
   `storage.local` under key `ngphyloPending`, copies to the clipboard, then opens the chosen
-  destination page in a new tab.
+  destination page in a new tab. The footer also carries the NGPhylogeny.fr citation (Lemoine et al.,
+  NAR 2019, doi:10.1093/nar/gkz303) — verified against Crossref before adding it.
 - `content/ngphylogeny.js` — on the One Click tab: reads and removes `ngphyloPending`
   (ignored if older than 5 min), finds the "Pasted text" textarea, fills it, dispatches
   `input`/`change`, shows a banner. If the field is not found within 15 s, the banner offers
