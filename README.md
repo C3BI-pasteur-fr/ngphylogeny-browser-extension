@@ -1,5 +1,8 @@
 # Sequences to NGPhylogeny (Firefox)
 
+[![Sign and release](https://github.com/C3BI-pasteur-fr/ngphylogeny-browser-extension/actions/workflows/release.yml/badge.svg)](https://github.com/C3BI-pasteur-fr/ngphylogeny-browser-extension/actions/workflows/release.yml)
+[![Latest release](https://img.shields.io/github/v/release/C3BI-pasteur-fr/ngphylogeny-browser-extension)](https://github.com/C3BI-pasteur-fr/ngphylogeny-browser-extension/releases/latest)
+
 A browser extension that detects sequences (nucleotide or protein) on a web page, fetches one directly
 by NCBI/UniProt accession number, or pulls a whole set of orthologs from [OrthoDB](https://www.orthodb.org/)
 by gene name and taxonomy level — then formats them as FASTA and pastes them into the **Pasted text**
@@ -158,8 +161,8 @@ automates building and signing on every version tag push.
 
 **Each release:**
 
-1. Bump `"version"` in `manifest.json` (and, for consistency, `package.json`).
-2. Commit, then tag and push: `git tag v0.3.0 && git push origin v0.3.0` — the tag's version must match
+1. Bump `"version"` in `manifest.json` (and, for consistency, `package.json`) to, say, `X.Y.Z`.
+2. Commit, then tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z` — the tag's version must match
    `manifest.json`, or the workflow fails fast before signing anything.
 3. The workflow runs the parser tests, lints and builds the extension, signs it via the AMO API
    (`--channel=unlisted`, i.e. self-distribution, no public review queue), and publishes a GitHub Release
