@@ -25,6 +25,24 @@
       <p id="fetch-status" class="fetch-status" role="status"></p>
     </section>
 
+    <section class="fetch-ortho">
+      <label for="ortho-name">Fetch orthologs (OrthoDB)</label>
+      <div class="fetch-row">
+        <input type="text" id="ortho-name" placeholder="gene/protein name, e.g. TRIM5" spellcheck="false" autocomplete="off">
+      </div>
+      <div class="fetch-row">
+        <input type="text" id="ortho-level" list="ortho-levels" placeholder="level, e.g. Primates or 9443" spellcheck="false" autocomplete="off">
+        <select id="ortho-seqtype" aria-label="Sequence type">
+          <option value="protein">Protein</option>
+          <option value="cds">CDS (nt)</option>
+        </select>
+        <button type="button" id="ortho-search" class="secondary">Search</button>
+      </div>
+      <datalist id="ortho-levels"></datalist>
+      <p id="ortho-status" class="fetch-status" role="status"></p>
+      <ul id="ortho-groups" class="list ortho-groups" hidden aria-label="Matching orthologous groups"></ul>
+    </section>
+
     <p id="empty" class="empty" hidden></p>
 
     <section id="results" hidden>
@@ -70,6 +88,7 @@
 
   <script src="../lib/parser.js"></script>
   <script src="../lib/accession.js"></script>
+  <script src="../lib/orthodb.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

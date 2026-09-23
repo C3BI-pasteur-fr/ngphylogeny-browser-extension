@@ -99,6 +99,39 @@ async function run(name, result, shot, act) {
   check('accession: fetched sequence sent', f.set && f.set.ngphyloPending.fasta.startsWith('>NP_999999.1\n'));
   check('accession: 1 sequence', f.set && f.set.ngphyloPending.count === 1);
 
+  // 7. Fetch orthologs from OrthoDB: search, pick a group, send
+  let o = await run('orthodb', { selection: [], page: [] }, { dark: false }, async (pg) => {
+    await pg.route('https://data.orthodb.org/v12/search**', (route) => route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: ['6632at9443'],
+        count: '1',
+        bigdata: [{ id: '6632at9443', name: 'TRIM5', gene_count: '2', level_name: 'Primates' }],
+      }),
+    }));
+    await pg.route('https://data.orthodb.org/v12/fasta**', (route) => route.fulfill({
+      contentType: 'text/plain',
+      body:
+        '>9606_0:00abcd {"pub_og_id":"6632at9443","organism_name":"Homo sapiens"}\n' +
+        'MKVLAAGIVGLLLAQPTEALSDEFGHIKLMNPQRSTVWY\n\n' +
+        '>9598_0:00ef01 {"pub_og_id":"6632at9443","organism_name":"Pan troglodytes"}\n' +
+        'MKVLAAGIVGLLLAQPTEALSDEFGHIKLMNPQRSTVWD\n',
+    }));
+    await pg.fill('#ortho-name', 'TRIM5');
+    await pg.fill('#ortho-level', 'Primates');
+    await pg.click('#ortho-search');
+    await pg.waitForSelector('.ortho-group');
+    await pg.click('.ortho-group');
+    await pg.waitForFunction(() => (document.getElementById('ortho-status').textContent || '').includes('added'));
+    await pg.click('#send');
+    await pg.waitForTimeout(200);
+  });
+  check('orthodb: 2 ortholog sequences sent', o.set && o.set.ngphyloPending.count === 2);
+  check('orthodb: species names used as headers',
+    o.set && o.set.ngphyloPending.fasta.includes('>Homo_sapiens\n') &&
+    o.set.ngphyloPending.fasta.includes('>Pan_troglodytes\n'));
+  check('orthodb: One Click tab opened', o.tabs && o.tabs.url === 'https://ngphylogeny.fr/workflows/oneclick/');
+
   await globalThis.__browser.close();
   process.exit(bad ? 1 : 0);
 })();

@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
   "name": "Sequences to NGPhylogeny",
-  "version": "0.4.0",
-  "description": "Extracts sequences (nucleotide or protein) from a web page or by accession number, formats them as FASTA and pastes them into the One Click or Blast forms of NGPhylogeny.fr, without submitting them.",
+  "version": "0.5.0",
+  "description": "Extracts sequences (nucleotide or protein) from a web page, by accession number, or as orthologs from OrthoDB, formats them as FASTA and pastes them into the One Click or Blast forms of NGPhylogeny.fr, without submitting them.",
   "browser_specific_settings": {
     "gecko": {
       "id": "seq2ngphylo@pasteur.fr",
@@ -26,7 +26,8 @@
     "storage",
     "clipboardWrite",
     "https://eutils.ncbi.nlm.nih.gov/*",
-    "https://rest.uniprot.org/*"
+    "https://rest.uniprot.org/*",
+    "https://data.orthodb.org/*"
   ],
   "content_scripts": [
     {

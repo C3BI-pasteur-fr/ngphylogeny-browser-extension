@@ -173,6 +173,25 @@
     }
   }
 
+  // ---------- fetched sequences (shared by accession + ortholog fetching) ----------
+
+  /** Dedupes against past fetches, appends to state.sets.fetched, and reveals the Fetched tab. */
+  function addFetched(recs) {
+    const added = recs.filter((rec) => {
+      const key = rec.header + '\u0000' + rec.seq;
+      if (state.fetchedSeen.has(key)) return false;
+      state.fetchedSeen.add(key);
+      return true;
+    });
+    state.sets.fetched.push(...added);
+    refreshScope();
+    if (added.length) {
+      revealResults();
+      setMode('fetched');
+    }
+    return added;
+  }
+
   // ---------- fetch by accession ----------
 
   function setFetchStatus(msg) { $('#fetch-status').textContent = msg; }
@@ -202,27 +221,94 @@
     const failed = [];
     results.forEach((r, i) => (r.status === 'fulfilled' ? texts.push(r.value) : failed.push(accs[i])));
 
-    const recs = SeqParser.parseAll(texts).filter((rec) => {
-      const key = rec.header + '\u0000' + rec.seq;
-      if (state.fetchedSeen.has(key)) return false;
-      state.fetchedSeen.add(key);
-      return true;
-    });
-    state.sets.fetched.push(...recs);
+    const recs = addFetched(SeqParser.parseAll(texts));
 
     input.value = '';
     $('#accession-fetch').disabled = false;
-    refreshScope();
-    if (recs.length) {
-      revealResults();
-      setMode('fetched');
-    }
 
     const parts = [];
     if (recs.length) parts.push(`${recs.length} ${plural(recs.length, 'sequence', 'sequences')} fetched.`);
     if (failed.length) parts.push(`Not found: ${failed.join(', ')}.`);
     if (!recs.length && !failed.length) parts.push('Already in the fetched list.');
     setFetchStatus(parts.join(' '));
+  }
+
+  // ---------- fetch orthologs (OrthoDB) ----------
+
+  function setOrthoStatus(msg) { $('#ortho-status').textContent = msg; }
+
+  function populateOrthoLevels() {
+    const dl = $('#ortho-levels');
+    OrthoDB.LEVELS.forEach((lv) => {
+      const opt = document.createElement('option');
+      opt.value = lv.name;
+      dl.appendChild(opt);
+    });
+  }
+
+  function renderOrthoGroups(groups) {
+    const list = $('#ortho-groups');
+    list.textContent = '';
+    groups.forEach((g) => {
+      const li = document.createElement('li');
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ortho-group';
+      b.textContent = g.name;
+      const meta = document.createElement('span');
+      meta.className = 'meta';
+      meta.textContent = `${g.geneCount} ${plural(g.geneCount, 'gene', 'genes')} · ${g.levelName} · ${g.id}`;
+      b.appendChild(meta);
+      b.addEventListener('click', () => fetchOrthoGroup(g.id, g.name));
+      li.appendChild(b);
+      list.appendChild(li);
+    });
+    list.hidden = groups.length === 0;
+  }
+
+  async function searchOrtho() {
+    const name = $('#ortho-name').value.trim();
+    if (!name) { setOrthoStatus('Enter a gene or protein name.'); return; }
+    const levelInput = $('#ortho-level').value;
+    const levelId = OrthoDB.resolveLevel(levelInput);
+    if (levelInput.trim() && !levelId) {
+      setOrthoStatus(`Unknown level "${levelInput.trim()}" — pick a suggestion or type a numeric NCBI taxid.`);
+      return;
+    }
+
+    $('#ortho-search').disabled = true;
+    $('#ortho-groups').hidden = true;
+    setOrthoStatus('Searching…');
+    try {
+      const res = await fetch(OrthoDB.searchUrl(name, levelId, 20));
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const groups = OrthoDB.parseSearchResults(await res.json());
+      renderOrthoGroups(groups);
+      setOrthoStatus(groups.length
+        ? `${groups.length} matching ${plural(groups.length, 'group', 'groups')} — pick one to fetch its sequences.`
+        : 'No orthologous groups found for that name/level.');
+    } catch (e) {
+      setOrthoStatus('Search failed: ' + e.message);
+    } finally {
+      $('#ortho-search').disabled = false;
+    }
+  }
+
+  async function fetchOrthoGroup(ogId, label) {
+    $('#ortho-groups').hidden = true;
+    setOrthoStatus(`Fetching sequences for ${label}…`);
+    try {
+      const seqtype = $('#ortho-seqtype').value;
+      const res = await fetch(OrthoDB.fastaUrl(ogId, seqtype));
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const text = await res.text();
+      const recs = addFetched(SeqParser.parseAll([OrthoDB.toCleanFasta(text)]));
+      setOrthoStatus(recs.length
+        ? `${recs.length} ortholog ${plural(recs.length, 'sequence', 'sequences')} added.`
+        : 'No new sequences (already fetched?).');
+    } catch (e) {
+      setOrthoStatus('Fetch failed: ' + e.message);
+    }
   }
 
   // ---------- startup ----------
@@ -279,11 +365,11 @@
       const out = await api.tabs.executeScript(tab.id, { file: '/content/extract.js' });
       res = out && out[0];
     } catch (e) {
-      showEmpty('Extraction is not possible on this page (browser-internal page, PDF viewer or restricted site). You can still fetch a sequence by accession number above.');
+      showEmpty('Extraction is not possible on this page (browser-internal page, PDF viewer or restricted site). You can still fetch a sequence by accession number or ortholog search above.');
       return;
     }
     if (!res) {
-      showEmpty('No response from the page. Reload it and reopen the extension, or fetch a sequence by accession number above.');
+      showEmpty('No response from the page. Reload it and reopen the extension, or fetch sequences by accession number or ortholog search above.');
       return;
     }
 
@@ -293,7 +379,7 @@
     const nPage = state.sets.page.length;
 
     if (nSel === 0 && nPage === 0) {
-      showEmpty('No sequence detected. Select the text of a sequence (FASTA, GenBank, UniProt or raw sequence) then reopen the extension, or fetch one by accession number above.');
+      showEmpty('No sequence detected. Select the text of a sequence (FASTA, GenBank, UniProt or raw sequence) then reopen the extension, or fetch sequences by accession number or ortholog search above.');
       return;
     }
 
@@ -325,5 +411,10 @@
     if (ev.key === 'Enter') fetchAccessions();
   });
 
+  $('#ortho-search').addEventListener('click', searchOrtho);
+  $('#ortho-name').addEventListener('keydown', (ev) => { if (ev.key === 'Enter') searchOrtho(); });
+  $('#ortho-level').addEventListener('keydown', (ev) => { if (ev.key === 'Enter') searchOrtho(); });
+
+  populateOrthoLevels();
   init();
 })();

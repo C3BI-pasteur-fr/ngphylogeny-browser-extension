@@ -69,8 +69,27 @@ h1 { margin: 0 0 8px; font-size: 15px; font-weight: 650; letter-spacing: 0; }
   background: var(--panel); color: inherit; font: inherit;
 }
 .fetch-row input[type="text"]:focus { border-color: var(--accent); }
+.fetch-row + .fetch-row { margin-top: 6px; }
 .fetch-status { margin: 4px 0 0; color: var(--muted); }
 .fetch-status:empty { display: none; }
+
+/* Orthologs fetch */
+.fetch-ortho { margin-bottom: 10px; }
+.fetch-ortho label { display: block; margin-bottom: 4px; color: var(--muted); }
+.fetch-ortho select {
+  padding: 5px 6px; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--panel); color: inherit; font: inherit;
+}
+.ortho-groups { margin-top: 6px; max-height: 140px; }
+.ortho-groups:empty { display: none; }
+.ortho-group {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  border: 0; background: transparent; color: inherit; font: inherit;
+  padding: 6px 8px;
+}
+.ortho-group + .ortho-group { border-top: 1px solid var(--line); }
+.ortho-group:hover { background: var(--bg); }
+.ortho-group .meta { display: block; color: var(--muted); font-size: 12px; margin-top: 1px; }
 
 /* List */
 .summary { margin-bottom: 6px; color: var(--muted); }
