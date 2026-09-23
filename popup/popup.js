@@ -17,10 +17,11 @@
   const TYPE_LABEL = { dna: ['DNA', 'nt'], rna: ['RNA', 'nt'], protein: ['protein', 'aa'] };
 
   const state = {
-    sets: { selection: [], page: [] },
+    sets: { selection: [], page: [], fetched: [] },
     mode: 'page',
     target: 'oneclick', // 'oneclick' (several sequences) | 'blast' (a single one)
     rows: [], // { header, seq, type, length, checked, name }
+    fetchedSeen: new Set(), // dedupes across repeated accession fetches
   };
 
   // ---------- list rows ----------
@@ -172,6 +173,58 @@
     }
   }
 
+  // ---------- fetch by accession ----------
+
+  function setFetchStatus(msg) { $('#fetch-status').textContent = msg; }
+
+  async function fetchOne(acc) {
+    for (const candidate of SeqAccession.fetchPlan(acc)) {
+      try {
+        const res = await fetch(candidate.url);
+        if (!res.ok) continue;
+        const text = await res.text();
+        if (text.trim().startsWith('>')) return text;
+      } catch (e) { /* try the next candidate database */ }
+    }
+    throw new Error('not found');
+  }
+
+  async function fetchAccessions() {
+    const input = $('#accession-input');
+    const accs = SeqAccession.splitAccessions(input.value);
+    if (!accs.length) return;
+
+    $('#accession-fetch').disabled = true;
+    setFetchStatus(`Fetching ${accs.length} ${plural(accs.length, 'accession', 'accessions')}…`);
+
+    const results = await Promise.allSettled(accs.map(fetchOne));
+    const texts = [];
+    const failed = [];
+    results.forEach((r, i) => (r.status === 'fulfilled' ? texts.push(r.value) : failed.push(accs[i])));
+
+    const recs = SeqParser.parseAll(texts).filter((rec) => {
+      const key = rec.header + '\u0000' + rec.seq;
+      if (state.fetchedSeen.has(key)) return false;
+      state.fetchedSeen.add(key);
+      return true;
+    });
+    state.sets.fetched.push(...recs);
+
+    input.value = '';
+    $('#accession-fetch').disabled = false;
+    refreshScope();
+    if (recs.length) {
+      revealResults();
+      setMode('fetched');
+    }
+
+    const parts = [];
+    if (recs.length) parts.push(`${recs.length} ${plural(recs.length, 'sequence', 'sequences')} fetched.`);
+    if (failed.length) parts.push(`Not found: ${failed.join(', ')}.`);
+    if (!recs.length && !failed.length) parts.push('Already in the fetched list.');
+    setFetchStatus(parts.join(' '));
+  }
+
   // ---------- startup ----------
 
   function showEmpty(msg) {
@@ -179,6 +232,28 @@
     p.textContent = msg;
     p.hidden = false;
     $('#results').hidden = true;
+  }
+
+  function revealResults() {
+    $('#empty').hidden = true;
+    $('#results').hidden = false;
+  }
+
+  function refreshScope() {
+    const counts = {
+      selection: state.sets.selection.length,
+      page: state.sets.page.length,
+      fetched: state.sets.fetched.length,
+    };
+    const scope = $('#scope');
+    let visible = 0;
+    scope.querySelectorAll('button').forEach((b) => {
+      const n = counts[b.dataset.mode];
+      b.hidden = n === 0;
+      if (n > 0) visible += 1;
+      b.querySelector('.count').textContent = `(${n})`;
+    });
+    scope.hidden = visible < 2;
   }
 
   function setMode(mode) {
@@ -204,11 +279,11 @@
       const out = await api.tabs.executeScript(tab.id, { file: '/content/extract.js' });
       res = out && out[0];
     } catch (e) {
-      showEmpty('Extraction is not possible on this page (browser-internal page, PDF viewer or restricted site).');
+      showEmpty('Extraction is not possible on this page (browser-internal page, PDF viewer or restricted site). You can still fetch a sequence by accession number above.');
       return;
     }
     if (!res) {
-      showEmpty('No response from the page. Reload it and reopen the extension.');
+      showEmpty('No response from the page. Reload it and reopen the extension, or fetch a sequence by accession number above.');
       return;
     }
 
@@ -218,20 +293,13 @@
     const nPage = state.sets.page.length;
 
     if (nSel === 0 && nPage === 0) {
-      showEmpty('No sequence detected. Select the text of a sequence (FASTA, GenBank, UniProt or raw sequence), then reopen the extension.');
+      showEmpty('No sequence detected. Select the text of a sequence (FASTA, GenBank, UniProt or raw sequence) then reopen the extension, or fetch one by accession number above.');
       return;
     }
 
-    $('#results').hidden = false;
-    if (nSel > 0) {
-      const scope = $('#scope');
-      scope.hidden = false;
-      scope.querySelector('[data-mode="selection"] .count').textContent = `(${nSel})`;
-      scope.querySelector('[data-mode="page"] .count').textContent = `(${nPage})`;
-      setMode('selection');
-    } else {
-      setMode('page');
-    }
+    revealResults();
+    refreshScope();
+    setMode(nSel > 0 ? 'selection' : 'page');
   }
 
   // ---------- events ----------
@@ -251,6 +319,11 @@
   $('#opt-gaps').addEventListener('change', update);
   $('#copy').addEventListener('click', copy);
   $('#send').addEventListener('click', send);
+
+  $('#accession-fetch').addEventListener('click', fetchAccessions);
+  $('#accession-input').addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter') fetchAccessions();
+  });
 
   init();
 })();

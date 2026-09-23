@@ -11,10 +11,20 @@
     <div id="scope" class="segmented" role="group" aria-label="Extraction scope" hidden>
       <button type="button" data-mode="selection" aria-pressed="false">Selection <span class="count"></span></button>
       <button type="button" data-mode="page" aria-pressed="true">Whole page <span class="count"></span></button>
+      <button type="button" data-mode="fetched" aria-pressed="false" hidden>Fetched <span class="count"></span></button>
     </div>
   </header>
 
   <main>
+    <section class="fetch-accession">
+      <label for="accession-input">Fetch by accession (NCBI or UniProt)</label>
+      <div class="fetch-row">
+        <input type="text" id="accession-input" placeholder="e.g. NP_149023.2, P0DTD1" spellcheck="false" autocomplete="off">
+        <button type="button" id="accession-fetch" class="secondary">Fetch</button>
+      </div>
+      <p id="fetch-status" class="fetch-status" role="status"></p>
+    </section>
+
     <p id="empty" class="empty" hidden></p>
 
     <section id="results" hidden>
@@ -59,6 +69,7 @@
   </footer>
 
   <script src="../lib/parser.js"></script>
+  <script src="../lib/accession.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

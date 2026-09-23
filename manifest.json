@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
   "name": "Sequences to NGPhylogeny",
-  "version": "0.3.0",
-  "description": "Extracts sequences (nucleotide or protein) from a web page, formats them as FASTA and pastes them into the One Click or Blast forms of NGPhylogeny.fr, without submitting them.",
+  "version": "0.4.0",
+  "description": "Extracts sequences (nucleotide or protein) from a web page or by accession number, formats them as FASTA and pastes them into the One Click or Blast forms of NGPhylogeny.fr, without submitting them.",
   "browser_specific_settings": {
     "gecko": {
       "id": "seq2ngphylo@pasteur.fr",
@@ -21,7 +21,13 @@
     "default_popup": "popup/popup.html",
     "default_icon": "icons/icon.svg"
   },
-  "permissions": ["activeTab", "storage", "clipboardWrite"],
+  "permissions": [
+    "activeTab",
+    "storage",
+    "clipboardWrite",
+    "https://eutils.ncbi.nlm.nih.gov/*",
+    "https://rest.uniprot.org/*"
+  ],
   "content_scripts": [
     {
       "matches": ["https://ngphylogeny.fr/workflows/oneclick*"],

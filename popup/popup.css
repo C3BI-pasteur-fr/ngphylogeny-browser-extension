@@ -59,6 +59,19 @@ h1 { margin: 0 0 8px; font-size: 15px; font-weight: 650; letter-spacing: 0; }
 
 .empty { margin: 8px 0; color: var(--muted); }
 
+/* Accession fetch */
+.fetch-accession { margin-bottom: 10px; }
+.fetch-accession label { display: block; margin-bottom: 4px; color: var(--muted); }
+.fetch-row { display: flex; gap: 6px; }
+.fetch-row input[type="text"] {
+  flex: 1; min-width: 0; padding: 5px 8px;
+  border: 1px solid var(--line); border-radius: 6px;
+  background: var(--panel); color: inherit; font: inherit;
+}
+.fetch-row input[type="text"]:focus { border-color: var(--accent); }
+.fetch-status { margin: 4px 0 0; color: var(--muted); }
+.fetch-status:empty { display: none; }
+
 /* List */
 .summary { margin-bottom: 6px; color: var(--muted); }
 .check { display: flex; align-items: baseline; gap: 6px; cursor: pointer; }

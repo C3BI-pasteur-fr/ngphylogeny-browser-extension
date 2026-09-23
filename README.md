@@ -1,9 +1,10 @@
 # Sequences to NGPhylogeny (Firefox)
 
-A browser extension that detects sequences (nucleotide or protein) on a web page, formats them as FASTA,
-and pastes them into the **Pasted text** field of the
-[One Click](https://ngphylogeny.fr/workflows/oneclick/) page of NGPhylogeny.fr, or a single sequence
-into the query field of the [Blast](https://ngphylogeny.fr/blast/) page.
+A browser extension that detects sequences (nucleotide or protein) on a web page — or fetches one
+directly by NCBI/UniProt accession number — formats them as FASTA, and pastes them into the
+**Pasted text** field of the [One Click](https://ngphylogeny.fr/workflows/oneclick/) page of
+NGPhylogeny.fr, or a single sequence into the query field of the
+[Blast](https://ngphylogeny.fr/blast/) page.
 **The form is never submitted**: you check it, then start the analysis yourself.
 
 ## Installation
@@ -40,6 +41,12 @@ icon (Extensions), then the pin next to "Sequences to NGPhylogeny".
    (a single sequence, picked with a radio button).
 5. "Send to NGPhylogeny" / "Send to Blast": a new tab opens and the field is filled in
    (the FASTA is also copied to the clipboard as a safety net).
+
+Don't have the sequence open in a tab? Type or paste one or more accession numbers (space, comma or
+newline separated) into the "Fetch by accession" box at the top and click **Fetch** — this works even
+on a page with nothing extractable, or on a blank tab. Each accession is tried against NCBI first (or
+UniProt first if it's shaped like a UniProt accession, e.g. `P0DTD1`), falling back through the other
+databases until one answers; successful fetches land in a **Fetched** tab alongside Selection/Whole page.
 
 ### Example: extracting a protein from NCBI
 
@@ -90,10 +97,13 @@ Blast only ever sends one sequence, so these warnings don't apply there.
 ## What has been tested, and what has not
 
 - `node test/parser.test.js`: 19 parser tests (formats, false positives on running text, names).
+- `node test/accession.test.js`: splitting a pasted batch of accessions, NCBI/UniProt shape detection,
+  and the resulting fetch URLs — pure logic, no network calls.
 - `test/fill.harness.js`, `test/blast.fill.harness.js` and `test/popup.harness.js` (Playwright /
   Chromium): pasting into four mock forms per destination (visible field, field hidden behind a radio
-  button, field injected late, no field), the absence of form submission, and the popup with a
-  mocked `browser` API (including the One Click / Blast destination toggle).
+  button, field injected late, no field), the absence of form submission, the popup with a
+  mocked `browser` API (including the One Click / Blast destination toggle), and fetching by accession
+  with `NP_999999.1` mocked via `page.route()`.
 - **Not tested: the real site, on either page.** The HTML of ngphylogeny.fr could not be inspected,
   so each field is found heuristically (a label, then attributes, then a lone `<textarea>`).
   If that fails, a banner offers to copy the FASTA. To pin the behaviour down:
@@ -143,9 +153,11 @@ To sign a build locally instead (e.g. to test signing before tagging), run
 ## Privacy
 
 Permissions: `activeTab` (reads the page only when you click), `storage` (temporary hand-off of the
-FASTA, deleted as soon as it is consumed or after 5 min), `clipboardWrite`, and content scripts
-limited to `https://ngphylogeny.fr/workflows/oneclick*` and `https://ngphylogeny.fr/blast*`.
-No data is sent anywhere else, except that Firefox itself periodically checks Mozilla's update
-service to see if a newer signed build of this add-on is available (standard behaviour for any
-Mozilla-signed extension, listed or not; declared via `data_collection_permissions: {required: ["none"]}`
-in `manifest.json`).
+FASTA, deleted as soon as it is consumed or after 5 min), `clipboardWrite`, content scripts limited to
+`https://ngphylogeny.fr/workflows/oneclick*` and `https://ngphylogeny.fr/blast*`, and host permissions
+for `https://eutils.ncbi.nlm.nih.gov/*` and `https://rest.uniprot.org/*` (only contacted when you type
+an accession and click **Fetch**; the accession itself is the only thing sent, over HTTPS, to fetch its
+public record — nothing else about the page or your browsing is sent). Firefox itself also periodically
+checks Mozilla's update service to see if a newer signed build of this add-on is available (standard
+behaviour for any Mozilla-signed extension, listed or not; declared via
+`data_collection_permissions: {required: ["none"]}` in `manifest.json`).

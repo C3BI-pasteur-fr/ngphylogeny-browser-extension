@@ -84,6 +84,21 @@ async function run(name, result, shot, act) {
   check('blast: second sequence chosen', b.set && b.set.ngphyloPending.fasta.startsWith('>CYC_HORSE\n'));
   check('blast: Blast tab opened', b.tabs && b.tabs.url === 'https://ngphylogeny.fr/blast/');
 
+  // 6. Fetch by accession on an otherwise empty page
+  let f = await run('accession', { selection: [], page: [] }, { dark: false }, async (pg) => {
+    await pg.route('https://eutils.ncbi.nlm.nih.gov/**', (route) => route.fulfill({
+      contentType: 'text/plain',
+      body: '>NP_999999.1 test protein [Test organism]\nMKVLAAGIVGLLLAQPTEALSDEFGHIKLMNPQRSTVWY\n',
+    }));
+    await pg.fill('#accession-input', 'NP_999999.1');
+    await pg.click('#accession-fetch');
+    await pg.waitForFunction(() => (document.getElementById('fetch-status').textContent || '').includes('fetched'));
+    await pg.click('#send');
+    await pg.waitForTimeout(200);
+  });
+  check('accession: fetched sequence sent', f.set && f.set.ngphyloPending.fasta.startsWith('>NP_999999.1\n'));
+  check('accession: 1 sequence', f.set && f.set.ngphyloPending.count === 1);
+
   await globalThis.__browser.close();
   process.exit(bad ? 1 : 0);
 })();
